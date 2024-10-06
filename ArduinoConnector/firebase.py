@@ -116,6 +116,14 @@ def set_new_current_event(current_event: tuple, event_start: datetime = None):
             })
         # send_completed_event(current_event, event_start, None)
 
+def send_mood (mood:tuple):
+    event_start = get_current_datetime()
+    
+    doc_ref = db.collection("metadata").document("mood")
+    doc_ref.set({
+            "mood": mood,
+        })     
+
 def send_test_firebase_data():
     """Send test event data to Firebase."""
     for i in range(0, 7 * 24, 24):

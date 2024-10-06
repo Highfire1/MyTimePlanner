@@ -91,6 +91,7 @@ if __name__ == "__main__":
                     firebase.end_current_event()
                     firebase.set_new_current_event(event_code)
                 else:
+                    firebase.send_mood(event_code)
                     firebase.send_completed_event(event_code, None, None)
                 last_sent_event = event_code
                 last_sent_time = round(time.time() * 1000)
