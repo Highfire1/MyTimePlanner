@@ -67,7 +67,8 @@
 /*
  * This include defines the actual pin number for pins like IR_RECEIVE_PIN, IR_SEND_PIN for many different boards and architectures
  */
-#define IR_RECEIVE_PIN 2
+#define IR_RECEIVE_PIN_ONE 2
+#define IR_RECEIVE_PIN_TWO 3
 #include <IRremote.hpp>  // include the library
 
 void setup() {
@@ -81,6 +82,7 @@ void setup() {
 
   // Start the receiver and if not 3. parameter specified, take LED_BUILTIN pin from the internal boards definition as default feedback LED
   IrReceiver.begin(2, ENABLE_LED_FEEDBACK);
+  IrReceiver.begin(3, ENABLE_LED_FEEDBACK);
 
   // Serial.print(F("Ready to receive IR signals of protocols: "));
   // printActiveIRProtocols(&Serial);
@@ -106,23 +108,12 @@ void loop() {
       // IrReceiver.printIRResultRawFormatted(&Serial, true);
       IrReceiver.resume();  // Do it here, to preserve raw data for printing with printIRResultRawFormatted()
     } else {
-      
       // Serial.println();
-      String myString = String(IrReceiver.decodedIRData.command);
-      Serial.println(myString);
-
+      Serial.println(IrReceiver.decodedIRData.command);
       IrReceiver.resume();  // Early enable receiving of the next IR frame
                             // IrReceiver.printIRResultShort(&Serial);
                             // IrReceiver.printIRSendUsage(&Serial);
     }
-    
-    /*
-         * Finally, check the received data and perform actions according to the received command
-         */
-    if (IrReceiver.decodedIRData.command == 0x10) {
-      // do something
-    } else if (IrReceiver.decodedIRData.command == 0x11) {
-      // do something else
-    }
   }
+
 }
