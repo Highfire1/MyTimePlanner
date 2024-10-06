@@ -1,10 +1,9 @@
 import serial
-import sqlite3
-import uuid
-from datetime import datetime
 from fastapi import FastAPI
 from pydantic import BaseModel
-import uvicorn
+import requests
+import json
+import time
 
 # Set up FastAPI app
 app = FastAPI(redoc_url="/")
@@ -13,32 +12,6 @@ app = FastAPI(redoc_url="/")
 # Adjust 'COM3' and baudrate as per your setup
 ser = serial.Serial('COM8', 115200, timeout=0.1)
 
-# Set up SQLite database
-conn = sqlite3.connect('events.db')
-cursor = conn.cursor()
-
-# Create the table if it doesn't exist
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS events (
-        id TEXT PRIMARY KEY,
-        event_code TEXT,
-        timestamp TEXT
-    )
-''')
-conn.commit()
-
-# Function to read serial input and save event
-def save_event(event_code):
-    event_id = str(uuid.uuid4())
-    timestamp = datetime.now().isoformat()
-    
-    cursor.execute('''
-        INSERT INTO events (id, event_code, timestamp)
-        VALUES (?, ?, ?)
-    ''', (event_id, event_code, timestamp))
-    conn.commit()
-
-
 
 # FastAPI model for returning event data
 class Event(BaseModel):
@@ -46,23 +19,9 @@ class Event(BaseModel):
     event_code: str
     timestamp: str
     
-# Function to create a new SQLite connection
-def get_db_connection():
-    conn = sqlite3.connect('events.db')
-    return conn
+USERNAME = "username"
+PASSWORD = "password"
 
-@app.get("/events", response_model=list[Event])
-def get_events():
-    
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute('SELECT * FROM events')
-    rows = cursor.fetchall()
-    
-    conn.close()
-    return [{"id": row[0], "event_code": row[1], "timestamp": row[2]} for row in rows]
 
 NUMBER_TO_FUNCTION:dict = {
     69: "power",
@@ -71,23 +30,49 @@ NUMBER_TO_FUNCTION:dict = {
     
 }
 
+    
+def send_event_to_database(event_code:str) -> bool:
+    url = "http://127.0.0.1:5000/add_event"
+    payload = {
+        "event_code": event_code
+    }
+    
+    # Make the POST request
+    response = requests.post(
+        url,
+        json=payload,             # Automatically sets Content-Type to application/json
+        auth=(USERNAME, PASSWORD) # Basic Authentication
+    )
 
-# Main function to continuously read from serial and save to database
-def main():
+    # Check the response
+    if response.status_code == 200:
+        print("Event saved to DB:", response.json())
+        return True
+    else:
+        print("Failed to save event:", response.status_code, response.text)
+        return False
+
+
+last_sent_event = None
+last_sent_time = round(time.time() * 1000) # current millisecond
+DELAY_IDENTICAL_EVENT = 500 # 0.5 seconds
+
+if __name__ == "__main__":
+    print("ArduinoConnector Launched.")
+
+    # Run the main serial reading loop
     while True:
         if ser.in_waiting > 0:
             value = ser.readline()
             event_code = value.decode("utf-8").strip()
             if event_code:  # Ensure event code is not empty
-                print(f"Received: {event_code}")
-                save_event(event_code)
-
-if __name__ == "__main__":
-    import threading
-    # Use Uvicorn to run the FastAPI app
-    api_thread = threading.Thread(target=lambda: uvicorn.run(app, host='0.0.0.0', port=8000))
-    api_thread.daemon = True
-    api_thread.start()
-
-    # Run the main serial reading loop
-    main()
+                
+                if event_code == last_sent_event and last_sent_time+DELAY_IDENTICAL_EVENT > round(time.time() * 1000):
+                    print(f"Event sent too soon after the last: {event_code}")
+                
+                else:
+                    print(f"Received: {event_code}")
+                    send_event_to_database(event_code)
+                    last_sent_event = event_code
+                    last_sent_time = round(time.time() * 1000)
+                    

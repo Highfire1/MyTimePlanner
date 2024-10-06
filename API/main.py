@@ -74,6 +74,6 @@ async def db_session_middleware(request, call_next):
     db_session.close()
     return response
 
-# Run the application with Uvicorn
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+# # Run the application with Uvicorn
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="127.0.0.1", port=5000)

@@ -1,12 +1,13 @@
-FROM python:3-slim as build
+FROM python:3.9
 
-# install requirements
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt --no-cache-dir option 
+WORKDIR /code
 
-# copy all files
-COPY . .
-COPY main.py main.py
+COPY ./requirements.txt /code/requirements.txt
 
-# run code
-CMD ["python3", "main.py"]
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+
+COPY ./main.py /code/
+
+
+CMD ["fastapi", "run", "main.py", "--port", "3000"]

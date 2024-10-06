@@ -1,12 +1,10 @@
-
 services:
-   myTimePlanner_API:
+   timeplanner_api:
     container_name: planner_API
     ports:
-      - '5000:5000'
+      - '3000:3000'
     build: ./API/
-    # networks:
-    #   - backend
+    # network_mode: "host"
     # volumes:
     #   - course_watcher_db:/database
     # environment:
@@ -16,3 +14,4 @@ services:
     #   VIRTUAL_PATH: /
     #   LETSENCRYPT_HOST: api2.langaracs.tech
     #   LETSENCRYPT_EMAIL: langaracompsciclub@gmail.com
+  
