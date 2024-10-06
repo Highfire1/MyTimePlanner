@@ -3,6 +3,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlmodel import SQLModel, Field, create_engine, Session, select
 import uuid
 import datetime
+import uvicorn
 
 # Database setup
 DATABASE_URL = "sqlite:///./events.db"
@@ -72,3 +73,7 @@ async def db_session_middleware(request, call_next):
     db_session = Session(engine)
     db_session.close()
     return response
+
+# Run the application with Uvicorn
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=5000)
