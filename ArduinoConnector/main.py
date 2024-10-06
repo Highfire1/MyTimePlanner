@@ -87,9 +87,11 @@ if __name__ == "__main__":
             
             else:
                 print(f"Received: {event_code}")
-                firebase.end_current_event()
-                firebase.set_new_current_event(event_code)
-                
+                if event_code[3] == "ACTIVITY":
+                    firebase.end_current_event()
+                    firebase.set_new_current_event(event_code)
+                else:
+                    firebase.send_completed_event(event_code, None, None)
                 last_sent_event = event_code
                 last_sent_time = round(time.time() * 1000)
                 

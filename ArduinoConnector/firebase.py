@@ -44,7 +44,12 @@ def get_negative_hours(hours) -> timedelta:
     """Return a timedelta representing a negative hour offset."""
     return timedelta(hours=-hours)
 
-def send_completed_event(event_type: tuple, event_start: datetime, event_end: datetime):
+def send_completed_event(event_type: tuple, event_start: datetime, event_end: datetime): # type: ignore
+    if event_start == None:
+        event_start = get_current_datetime()
+    
+    if event_end == None:
+        event_end = get_current_datetime()
     """Send a completed event to Firebase with detailed information."""
     # Calculate event details
     duration_in_seconds = int((event_end - event_start).total_seconds())
