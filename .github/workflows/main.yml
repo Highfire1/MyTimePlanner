@@ -28,7 +28,7 @@ jobs:
       - name: Build and push docker container to Github Package Registry
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./API
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: type=gha
